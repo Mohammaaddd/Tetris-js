@@ -6,29 +6,29 @@ const scoreDisplay = document.querySelector("#score");
 const startButton = document.querySelector("#startButton");
 let timerId;
 let score = 0;
-const colors = ["orange", "red", "purple", "green", "blue"];
+const colors = ["orange", "blue", "red", "green", "purple", "yellow", "cyan"];
 
 //The Tetrominoes
-const lTetremino = [
+const lTetromino = [
   [1, width + 1, width * 2 + 1, 2],
   [width, width + 1, width + 2, width * 2 + 2],
   [1, width + 1, width * 2 + 1, width * 2],
   [width, width * 2, width * 2 + 1, width * 2 + 2],
 ];
 
-// const jTetromino = [
-//   [1, width + 1, width * 2 + 1, width * 2 + 2],
-//   [width, width + 1, width + 2, width * 2],
-//   [0, 1, width + 1, width * 2 + 1],
-//   [width + 2, width * 2, width * 2 + 1, width * 2 + 2],
-// ];
+const jTetromino = [
+  [1, width + 1, width * 2 + 1, width * 2 + 2],
+  [width, width + 1, width + 2, width * 2],
+  [0, 1, width + 1, width * 2 + 1],
+  [width + 2, width * 2, width * 2 + 1, width * 2 + 2],
+];
 
-// const sTetromino = [
-//   [1, width + 1, width + 2, width * 2 + 2],
-//   [width + 1, width * 2 + 1, width * 2, width * 3],
-//   [1, width + 1, width + 2, width * 2 + 2],
-//   [width + 1, width * 2 + 1, width * 2, width * 3],
-// ];
+const sTetromino = [
+  [1, 2, width, width + 1],
+  [0, width, width + 1, width * 2 + 1],
+  [1, 2, width, width + 1],
+  [0, width, width + 1, width * 2 + 1],
+];
 
 const zTetromino = [
   [0, width, width + 1, width * 2 + 1],
@@ -59,10 +59,10 @@ const iTetromino = [
 ];
 
 const theTetrominoes = [
-  lTetremino,
-  //   jTetromino,
+  lTetromino,
+  jTetromino,
+  sTetromino,
   zTetromino,
-  //   sTetromino,
   tTetromino,
   oTetromino,
   iTetromino,
@@ -111,8 +111,8 @@ function controlRotate(e) {
   }
 }
 
-document.addEventListener("keydown", control);
-document.addEventListener("keyup", controlRotate);
+// document.addEventListener("keydown", control);
+// document.addEventListener("keyup", controlRotate);
 
 //move down function
 function moveDown() {
@@ -181,13 +181,34 @@ function moveRight() {
   draw();
 }
 
+function checkRotatedPosition() {
+  if (
+    current.some((index) => (currentPosition + index) % width === width - 1)
+  ) {
+    currentPosition -= theTetrominoes[random] === iTetromino ? 2 : 1;
+  }
+  if (current.some((index) => (currentPosition + index) % width === 0)) {
+    if (theTetrominoes[random] === iTetromino) currentPosition += 3;
+    else if (
+      theTetrominoes[random] === tTetromino ||
+      theTetrominoes[random] === lTetromino ||
+      theTetrominoes[random] === jTetromino
+    )
+      currentPosition += 2;
+  }
+}
+
 //rotate the tetromino
 function rotate() {
   undraw();
+
   currentRotation++;
-  //checking for index out of bounds
   if (currentRotation === current.length) currentRotation = 0;
+
   current = theTetrominoes[random][currentRotation];
+
+  checkRotatedPosition();
+
   draw();
 }
 
@@ -199,7 +220,9 @@ let displayIndex = 0;
 //the tetromino without rotation
 const upNextTetrominoes = [
   [1, displayWidth + 1, displayWidth * 2 + 1, 2], //ltetromino
+  [1, displayWidth + 1, displayWidth * 2 + 1, displayWidth * 2], //jtetromino
   [0, displayWidth, displayWidth + 1, displayWidth * 2 + 1], //ztetromino
+  [1, displayWidth + 1, displayWidth + 2, displayWidth * 2 + 2], //stetromino
   [1, displayWidth, displayWidth + 1, displayWidth + 2], //tTetromino
   [0, 1, displayWidth, displayWidth + 1], //otetromino
   [1, displayWidth + 1, displayWidth * 2 + 1, displayWidth * 3 + 1], //itetromino
@@ -225,12 +248,16 @@ startButton.addEventListener("click", () => {
     document.querySelector(".song").pause();
     clearInterval(timerId);
     timerId = null;
+    document.removeEventListener("keydown", control);
+    document.removeEventListener("keyup", controlRotate);
   } else {
     draw();
     document.querySelector(".song").play();
     document.querySelector(".song").volume = 0.5;
     timerId = setInterval(moveDown, 1000);
     nextRandom = Math.floor(Math.random() * theTetrominoes.length);
+    document.addEventListener("keydown", control);
+    document.addEventListener("keyup", controlRotate);
     displayShape();
   }
 });
@@ -242,7 +269,6 @@ function addScore() {
       i,
       i + 1,
       i + 2,
-      i + 3,
       i + 3,
       i + 4,
       i + 5,
