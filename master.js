@@ -7,6 +7,8 @@ const startButton = document.querySelector("#startButton");
 let timerId;
 let score = 0;
 const colors = ["orange", "blue", "red", "green", "purple", "yellow", "cyan"];
+let level = 1;
+let speed = 1000; // starting speed (1 second)
 
 //The Tetrominoes
 const lTetromino = [
@@ -31,10 +33,11 @@ const sTetromino = [
 ];
 
 const zTetromino = [
-  [0, width, width + 1, width * 2 + 1],
-  [width + 1, width + 2, width * 2, width * 2 + 1],
-  [0, width, width + 1, width * 2 + 1],
-  [width + 1, width + 2, width * 2, width * 2 + 1],
+  [1, width, width + 1, width * 2],
+  [width, width + 1, width * 2 + 1, width * 2 + 2],
+  [1, width, width + 1, width * 2],
+  // [width + 1, width + 2, width * 2, width * 2 + 1],
+  [width, width + 1, width * 2 + 1, width * 2 + 2],
 ];
 
 const tTetromino = [
@@ -96,17 +99,17 @@ function undraw() {
 
 //assign function to keycodes
 function control(e) {
-  if (e.keyCode === 37) {
+  if (e.key === "ArrowLeft") {
     moveLeft();
-  } else if (e.keyCode === 39) {
+  } else if (e.key === "ArrowRight") {
     moveRight();
-  } else if (e.keyCode === 40) {
+  } else if (e.key === "ArrowDown") {
     moveDown();
   }
 }
 
 function controlRotate(e) {
-  if (e.keyCode === 38) {
+  if (e.key === "ArrowUp") {
     rotate();
   }
 }
@@ -134,6 +137,8 @@ function freeze() {
     //start a new tetromino falling
     random = nextRandom;
     nextRandom = Math.floor(Math.random() * theTetrominoes.length);
+
+    currentRotation = 0;
     current = theTetrominoes[random][currentRotation];
     currentPosition = 4;
     draw();
@@ -202,12 +207,23 @@ function checkRotatedPosition() {
 function rotate() {
   undraw();
 
+  const previousRotation = currentRotation;
+
   currentRotation++;
   if (currentRotation === current.length) currentRotation = 0;
 
   current = theTetrominoes[random][currentRotation];
 
   checkRotatedPosition();
+
+  if (
+    current.some((index) =>
+      cells[currentPosition + index].classList.contains("taken"),
+    )
+  ) {
+    currentRotation = previousRotation;
+    current = theTetrominoes[random][currentRotation];
+  }
 
   draw();
 }
@@ -254,13 +270,26 @@ startButton.addEventListener("click", () => {
     draw();
     document.querySelector(".song").play();
     document.querySelector(".song").volume = 0.5;
-    timerId = setInterval(moveDown, 1000);
+    timerId = setInterval(moveDown, speed);
     nextRandom = Math.floor(Math.random() * theTetrominoes.length);
     document.addEventListener("keydown", control);
     document.addEventListener("keyup", controlRotate);
     displayShape();
   }
 });
+
+//diffculty
+function updateLevel() {
+  const newLevel = Math.floor(score / 50) + 1;
+
+  if (newLevel > level) {
+    level = newLevel;
+    speed = Math.max(100, 1000 - (level - 1) * 100);
+
+    clearInterval(timerId);
+    timerId = setInterval(moveDown, speed);
+  }
+}
 
 //add score and remove the row
 function addScore() {
@@ -281,6 +310,8 @@ function addScore() {
     if (row.every((index) => cells[index].classList.contains("taken"))) {
       score += 10;
       scoreDisplay.innerHTML = score;
+      updateLevel();
+
       row.forEach((index) => {
         cells[index].classList.remove("taken");
         cells[index].classList.remove("tetromino");
@@ -302,5 +333,6 @@ function gameOver() {
   ) {
     scoreDisplay.innerHTML = "end";
     clearInterval(timerId);
+    removeEventListener("keydown", control);
   }
 }
