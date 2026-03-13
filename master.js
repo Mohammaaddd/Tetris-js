@@ -258,22 +258,38 @@ function displayShape() {
   });
 }
 
+let songs = document.querySelectorAll(".song");
+let randomSong = Math.floor(Math.random() * songs.length);
+let song = songs[randomSong];
+
 //start/pause button
 startButton.addEventListener("click", () => {
   if (timerId) {
-    document.querySelector(".song").pause();
+    // document.querySelector(".song").pause();
+    song.pause();
     clearInterval(timerId);
     timerId = null;
     document.removeEventListener("keydown", control);
     document.removeEventListener("keyup", controlRotate);
+    document.getElementById("leftBtn").removeEventListener("click", moveLeft);
+    document.getElementById("rightBtn").removeEventListener("click", moveRight);
+    document.getElementById("downBtn").removeEventListener("click", moveDown);
+    document.getElementById("rotateBtn").removeEventListener("click", rotate);
   } else {
     draw();
-    document.querySelector(".song").play();
-    document.querySelector(".song").volume = 0.5;
+    // document.querySelector(".song").play();
+    // document.querySelector(".song").volume = 0.5;
+    song.play();
+    song.volume = 0.5;
     timerId = setInterval(moveDown, speed);
-    nextRandom = Math.floor(Math.random() * theTetrominoes.length);
+    // nextRandom = Math.floor(Math.random() * theTetrominoes.length);
     document.addEventListener("keydown", control);
+    // mobile controls
     document.addEventListener("keyup", controlRotate);
+    document.getElementById("leftBtn").addEventListener("click", moveLeft);
+    document.getElementById("rightBtn").addEventListener("click", moveRight);
+    document.getElementById("downBtn").addEventListener("click", moveDown);
+    document.getElementById("rotateBtn").addEventListener("click", rotate);
     displayShape();
   }
 });

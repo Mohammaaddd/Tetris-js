@@ -110,3 +110,31 @@ button {
 button:hover {
   transform: scale(1.05);
 }
+
+/* mobile controls */
+.mobile-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 0px;
+  right: 0px;
+  display: none;
+  justify-content: center;
+  gap: 15px;
+}
+
+.moblile-controls button {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  border-radius: 10px;
+  border: none;
+  background: #00ffff;
+  color: black;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .mobile-controls {
+    display: flex;
+  }
+}
